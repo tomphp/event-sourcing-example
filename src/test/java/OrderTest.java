@@ -20,7 +20,7 @@ class OrderTest {
     @Test
     void test_create_order_emits_OrderCreated() {
         var order = Order.create(orderID);
-        assertEquals(Collections.singletonList(new OrderCreated(orderID)), order.retrieveEvents());
+        assertEquals(Collections.singletonList(new OrderCreated(orderID)), order.retrieveNewEvents());
     }
 
     @Test
@@ -29,7 +29,7 @@ class OrderTest {
         order.addItem(new ItemCode("ITEM99"));
         assertEquals(Arrays.asList(
                 new OrderCreated(orderID),
-                new ItemAdded(new ItemCode("ITEM99"))), order.retrieveEvents()
+                new ItemAdded(new ItemCode("ITEM99"))), order.retrieveNewEvents()
         );
     }
 
@@ -49,7 +49,7 @@ class OrderTest {
                 new OrderCreated(orderID),
                 new ItemAdded(new ItemCode("ITEM99")),
                 new OrderPlaced()
-        ), order.retrieveEvents());
+        ), order.retrieveNewEvents());
     }
 
     @Test
@@ -121,7 +121,7 @@ class OrderTest {
                 new OrderCreated(OrderID.generate()),
                 new ItemAdded(new ItemCode("ITEM_1"))
         )));
-        assertEquals(0, order.retrieveEvents().size());
+        assertEquals(0, order.retrieveNewEvents().size());
     }
 
     @Test
@@ -131,7 +131,7 @@ class OrderTest {
                 new ItemAdded(new ItemCode("ITEM_1"))
         )));
         order.place();
-        assertEquals(Arrays.asList(new OrderPlaced()), order.retrieveEvents());
+        assertEquals(Arrays.asList(new OrderPlaced()), order.retrieveNewEvents());
     }
 
     @Test

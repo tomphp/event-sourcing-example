@@ -12,12 +12,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Order {
-    private ArrayList<OrderEvent> events = new ArrayList<>();
+    private ArrayList<OrderEvent> newEvents = new ArrayList<>();
+
     private OrderID id;
     private HashMap<ItemCode, Quantity> lines = new HashMap<>();
     private boolean placed = false;
 
+    public static Order create(OrderID orderID) {
+        OrderCreated orderCreated = new OrderCreated(orderID);
+        ArrayList<OrderEvent> events = new ArrayList<>(Collections.singletonList(orderCreated));
+        Order order = new Order(events);
+        order.newEvents = events;
+        return order;
+    }
+
     public static Order fromEventStream(ArrayList<OrderEvent> events) {
+        return new Order(events);
+    }
+
+    private Order(ArrayList<OrderEvent> events) {
         if (events.size() == 0) {
             throw new EmptyEventStream();
         }
@@ -26,32 +39,25 @@ public class Order {
             throw new InvalidEvent("The first event must be OrderCreated");
         }
 
-        return new Order(events);
-    }
-
-    public static Order create(OrderID orderID) {
-        ArrayList<OrderEvent> events = new ArrayList<>(Collections.singletonList(new OrderCreated(orderID)));
-        Order order = new Order(events);
-        order.events = events;
-        return order;
-    }
-
-    private Order(ArrayList<OrderEvent> events) {
         for (OrderEvent event : events) {
             applyEvent(event);
         }
     }
 
-    public List<OrderEvent> retrieveEvents() {
-        return events;
+    public List<OrderEvent> retrieveNewEvents() {
+        return newEvents;
     }
 
     public void addItem(ItemCode item) {
-        newEvent(new ItemAdded(item));
+        OrderEvent event = new ItemAdded(item);
+        applyEvent(event);
+        newEvents.add(event);
     }
 
     public void place() {
-        newEvent(new OrderPlaced());
+        OrderEvent event = new OrderPlaced();
+        applyEvent(event);
+        newEvents.add(event);
     }
 
     public void print(OrderPrinter printer) {
@@ -64,11 +70,6 @@ public class Order {
                 .collect(Collectors.toList());
 
         printer.print(orderLines);
-    }
-
-    private void newEvent(OrderEvent event) {
-        applyEvent(event);
-        events.add(event);
     }
 
     private void applyEvent(OrderEvent event) {
