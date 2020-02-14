@@ -19,10 +19,10 @@ public class Order {
     private boolean placed = false;
 
     public static Order create(OrderID orderID) {
-        OrderCreated orderCreated = new OrderCreated(orderID);
-        ArrayList<OrderEvent> events = new ArrayList<>(Collections.singletonList(orderCreated));
-        Order order = new Order(events);
-        order.newEvents = events;
+        var orderCreated = new OrderCreated(orderID);
+        var events = Collections.singletonList(orderCreated);
+        var order = new Order(new ArrayList<>(events));
+        order.newEvents.add(orderCreated);
         return order;
     }
 
