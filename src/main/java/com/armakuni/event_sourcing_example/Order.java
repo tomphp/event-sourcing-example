@@ -37,7 +37,7 @@ public class Order {
         }
 
         for (OrderEvent event : events) {
-            event.apply(state);
+            event.applyTo(state);
         }
     }
 
@@ -47,13 +47,13 @@ public class Order {
 
     public void addItem(ItemCode item) {
         OrderEvent event = new ItemAdded(item);
-        event.apply(state);
+        event.applyTo(state);
         newEvents.add(event);
     }
 
     public void place() {
         OrderEvent event = new OrderPlaced();
-        event.apply(state);
+        event.applyTo(state);
         newEvents.add(event);
     }
 

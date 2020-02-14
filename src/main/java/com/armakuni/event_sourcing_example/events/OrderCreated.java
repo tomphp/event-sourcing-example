@@ -18,7 +18,7 @@ public class OrderCreated extends OrderEvent {
     }
 
     @Override
-    public void apply(OrderStateProjection projection) {
+    public void applyTo(OrderStateProjection projection) {
         projection.applyEvent(this);
     }
 
