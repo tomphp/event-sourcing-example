@@ -7,21 +7,18 @@ import com.armakuni.event_sourcing_example.events.OrderPlaced;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Order {
     private ArrayList<OrderEvent> newEvents = new ArrayList<>();
 
-    private OrderID id;
-    private HashMap<ItemCode, Quantity> lines = new HashMap<>();
-    private boolean placed = false;
+    private OrderStateProjection state = new OrderStateProjection();
 
     public static Order create(OrderID orderID) {
         OrderCreated orderCreated = new OrderCreated(orderID);
         ArrayList<OrderEvent> events = new ArrayList<>(Collections.singletonList(orderCreated));
-        Order order = new Order(events);
+        Order order = Order.fromEventStream(events);
         order.newEvents = events;
         return order;
     }
@@ -40,7 +37,7 @@ public class Order {
         }
 
         for (OrderEvent event : events) {
-            applyEvent(event);
+            event.apply(state);
         }
     }
 
@@ -50,63 +47,26 @@ public class Order {
 
     public void addItem(ItemCode item) {
         OrderEvent event = new ItemAdded(item);
-        applyEvent(event);
+        event.apply(state);
         newEvents.add(event);
     }
 
     public void place() {
         OrderEvent event = new OrderPlaced();
-        applyEvent(event);
+        event.apply(state);
         newEvents.add(event);
     }
 
     public void print(OrderPrinter printer) {
-        if (!placed) {
-            throw new OrderHasNotBeenPlaced(id);
+        if (!state.isPlaced()) {
+            throw new OrderHasNotBeenPlaced(state.getId());
         }
 
-        var orderLines = lines.entrySet().stream()
+        var orderLines = state.getLines().entrySet().stream()
                 .map((entry) -> new OrderLine(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
         printer.print(orderLines);
     }
 
-    private void applyEvent(OrderEvent event) {
-        if (event instanceof OrderCreated) {
-            this.applyEvent((OrderCreated) event);
-        } else if (event instanceof ItemAdded) {
-            this.applyEvent((ItemAdded) event);
-        } else if (event instanceof OrderPlaced) {
-            this.applyEvent((OrderPlaced) event);
-        }
-    }
-
-    private void applyEvent(OrderCreated event) {
-        id = event.id;
-    }
-
-    private void applyEvent(ItemAdded event) {
-        if (placed) {
-            throw new OrderHasAlreadyBeenPlaced(id);
-        }
-
-        var quantity = lines.containsKey(event.itemCode)
-                ? lines.get(event.itemCode).increment()
-                : Quantity.of(1);
-
-        lines.put(event.itemCode, quantity);
-    }
-
-    private void applyEvent(OrderPlaced event) {
-        if (placed) {
-            throw new OrderHasAlreadyBeenPlaced(id);
-        }
-
-        if (lines.isEmpty()) {
-            throw new OrderHasNoItems(id);
-        }
-
-        placed = true;
-    }
 }

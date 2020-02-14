@@ -2,6 +2,7 @@ package com.armakuni.event_sourcing_example.events;
 
 import com.armakuni.event_sourcing_example.OrderEvent;
 import com.armakuni.event_sourcing_example.ItemCode;
+import com.armakuni.event_sourcing_example.OrderStateProjection;
 
 import java.util.Objects;
 
@@ -14,6 +15,11 @@ public class ItemAdded extends OrderEvent {
         }
 
         this.itemCode = itemCode;
+    }
+
+    @Override
+    public void apply(OrderStateProjection projection) {
+        projection.applyEvent(this);
     }
 
     @Override
