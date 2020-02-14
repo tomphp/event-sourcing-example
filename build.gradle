@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'com.armakuni'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.10
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testCompile group: "org.mockito", name: "mockito-core", version: "2.+"
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.0'
+}
+
+test {
+    useJUnitPlatform()
+}
