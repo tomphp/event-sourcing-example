@@ -21,7 +21,7 @@ public class Order {
     public static Order create(OrderID orderID) {
         var orderCreated = new OrderCreated(orderID);
         var events = Collections.singletonList(orderCreated);
-        var order = new Order(new ArrayList<>(events));
+        var order = Order.fromEventStream(new ArrayList<>(events));
         order.newEvents.add(orderCreated);
         return order;
     }
@@ -36,7 +36,9 @@ public class Order {
         }
 
         if (!(events.get(0) instanceof OrderCreated)) {
-            throw new InvalidEvent("The first event must be OrderCreated");
+            throw new InvalidEvent(
+                    "The first event must be OrderCreated"
+            );
         }
 
         for (OrderEvent event : events) {
@@ -74,11 +76,11 @@ public class Order {
 
     private void applyEvent(OrderEvent event) {
         if (event instanceof OrderCreated) {
-            this.applyEvent((OrderCreated) event);
+            applyEvent((OrderCreated) event);
         } else if (event instanceof ItemAdded) {
-            this.applyEvent((ItemAdded) event);
+            applyEvent((ItemAdded) event);
         } else if (event instanceof OrderPlaced) {
-            this.applyEvent((OrderPlaced) event);
+            applyEvent((OrderPlaced) event);
         }
     }
 
